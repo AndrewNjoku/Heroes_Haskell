@@ -1,6 +1,7 @@
 module Request
     ( getHeroes
 	, getHeroesWin
+	, getHeroesStats
     ) where
 
 
@@ -25,11 +26,15 @@ import Network.HTTP.Req
 	
 
 --URLS
+baseurl :: String 
+baseurl = "https://api.opendota.com/api/"
 
-baseurl="https://api.opendota.com/api/"
-hero="/heroes"
-stats="/heroStats"
-matches=heroes+{hero_id}/matches
+HeroURL :: String
+HeroURL = baseurl+"/heroes"
+ 
+ --Enter the name of the hero and you will get the url required to get heroStats
+HeroStatsURL :: String -> String
+HeroStatsURL x = baseurl ++ getHeroId x ++ "/matches"
 
 
 
@@ -58,6 +63,10 @@ getHeroesStats :: Int -> IO L.ByteString
        jsonResponse -- we want a json response naturally
        mempty       -- This part holds additional options we dont need  
 
+getHeroId :: String -> Int 
+
+getHeroId x | x=="Axe" = return 1
+            | x=""     = return 2
 
 
 
