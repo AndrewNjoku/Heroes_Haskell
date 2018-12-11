@@ -5,6 +5,7 @@ module Request
 
 
 import HeroesParser
+import JSON
 import HeroesDatabase
 import GHC.Int
 import Data.Text (pack)
@@ -15,35 +16,48 @@ import Network.HTTP.Conduit
 import Network.HTTP.Types.Status (statusCode)
 import Conduit (runConduit, (.|))
 import Control.Monad.Trans.Resource (runResourceT)
+import Control.Monad.IO.Class
 import qualified Control.Exception as E
 import Data.Time.Clock
 import Data.Time.Calendar
 import qualified Data.ByteString as D
 import Network.HTTP.Req
-
 	
-type URL = String
+
+--URLS
+
+baseurl="https://api.opendota.com/api/"
+hero="/heroes"
+stats="/heroStats"
+matches=heroes+{hero_id}/matches
 
 
 
+--returns all heores
 
-getHeroes :: URL -> IO L.ByteString
+getHeroes :: IO L.ByteString
 
-
-  let payload = Hero
-        [ "id" .= (10 :: Int)
-        , "name" .= (20 :: String) ]
-
-
-  -- One function—full power and flexibility, automatic retrying on timeouts
-  -- and such, automatic connection sharing.
-  r <- req GET -- method
-       (https "https://api.opendota.com/api/heroes" /: "get") -- safe by construction URL
-       (ReqBodyJson payload) -- use built-in options or add your own
-       jsonResponse -- specify how to interpret response
-       mempty       -- query 
+getHeroes = runReq def $ do
+       r <- req GET -- method
+       (https (baseurl+hero) /: "get") -- safe by construction URL
+       --ReqBody takes a From jason instance which haskell has constructed for us 
+       (ReqBodyJson Hero) -- use built-in options or add your own
+       jsonResponse -- we want a json response naturally
+       mempty       -- This part holds additional options we dont need  
 
 
-getHeroesWin :: Int -> URL -> IO L.ByteString
+
+--you enter hero id which you can get from getHeroId and will perform a get to return stats
+getHeroesStats :: Int -> IO L.ByteString
+
+  getHeroesStats x = runReq def $ do
+       r <- req GET -- method
+       (https (baseurl+hero) /: "get") -- safe by construction URL
+       --ReqBody takes a From jason instance which haskell has constructed for us 
+       (ReqBodyJson HeroStats) -- use built-in options or add your own
+       jsonResponse -- we want a json response naturally
+       mempty       -- This part holds additional options we dont need  
+
+
 
 
