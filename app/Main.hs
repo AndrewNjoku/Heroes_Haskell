@@ -1,22 +1,56 @@
 module Main where
 
-import Request
+import Request.getJSON
 import Data.Aeson
-import JSON
+
+
+
+
+--Types
+
+type URL = String
+type HeroName = String
+
+
+
+--URLS
+
+baseurl :: String 
+baseurl = "https://api.opendota.com/api/"
+
+heroURL :: String
+heroURL = baseurl++"/heroes"
+
+heroRecentMatchesURL :: String -> String
+heroStatsURL name = baseurl ++ getHeroId (name) ++ "/matches"
+
 
 
 main :: IO ()
 
-main = do
- -- Get JSON data and decode it
- d <- (eitherDecode <$> getHeroes) :: IO (Either String [Hero])
+--get Hero data and convert to Hero datatype 
+
+ d <- (eitherDecode <$> getJSON heroURL) :: IO (Either String [Hero])
  -- If d is Left, the JSON was malformed.
  -- In that case, we report the error.
  -- Otherwise, we perform the operation of
  -- our choice. In this case, just print it.
- case d of
+   case d of
+        Left err -> putStrLn err
+        Right ps -> print ps
 
- 	-- Read error or return our hero object and parse it for further actions 
 
-  Left err -> putStrLn err
-  Right hero -> parseHero hero
+
+
+getHeroId :: HeroName -> Int 
+
+ getHeroId x | x=="Anti-Mage" = return 1
+            | x="Axe"     = return 2
+            | x="Bane" = return 3
+            | x="Ax"     = return 4
+            | x=="Anti-Mage" = return 5
+            | x="Axe"     = return 6
+            | x=="Anti-Mage" = return 1
+            | x="Axe"     = return 27
+            | x=="Anti-Mage" = return 1
+            | x="Axe"     = return 2 

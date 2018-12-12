@@ -26,7 +26,10 @@ source-repository head
   location: https://github.com/githubuser/project
 
 library
-  extensions: OverloadedStrings
+  extensions: 
+      OverloadedStrings
+     ,XDeriveGeneric
+     
   exposed-modules:
       Lib
   other-modules:

@@ -1,7 +1,4 @@
-module JSON
-    ( getHeroes
-	, getHeroesWin
-    ) where
+module JSON where
 
 
 import Data.Aeson
@@ -10,15 +7,27 @@ import GHC.Generics
 
 
 
-	
 data Hero =
+
   Hero { id  :: Int
        , name  :: !Text
-       ,localised_name :: Int
+       ,localized_name :: !Text
        ,primary_attr :: !Text
        ,attack_type :: !Text
+       ,roles     :: [Text]
+       ,legs  :: Int
         
            } deriving (Show,Generic)
+
+
+      
+instance FromJSON Hero
+instance ToJSON Hero
+
+
+
+}           
+
 
 data HeroStats =
   Hero { name: !Text,
@@ -46,9 +55,20 @@ data HeroStats =
 } deiving (Show, Generic)
 
 
-
-instance FromJSON Hero
-instance ToJSON Hero
 instance FromJSON HeroStats
 instance  ToJSON HeroStats 
+
+
+data HeroStats = 
+
+  HeroStats{
+
+
+
+
+
+
+
+  
+}
 
