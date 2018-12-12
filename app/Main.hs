@@ -9,6 +9,7 @@ main :: IO ()
 
 main = do
  -- Get JSON data and decode it
+ -- <$> is equivelent to fmap
  d <- (eitherDecode <$> getHeroes) :: IO (Either String [Hero])
  -- If d is Left, the JSON was malformed.
  -- In that case, we report the error.

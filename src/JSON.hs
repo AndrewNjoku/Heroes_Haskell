@@ -1,6 +1,6 @@
 module JSON
     ( getHeroes
-	, getHeroesWin
+	 , getHeroesWin
     ) where
 
 
