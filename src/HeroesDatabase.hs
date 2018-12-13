@@ -4,6 +4,7 @@ module HeroesDatabase
     , initialiseDB
     , insertHeroes
     , insertHeroesMatches
+	, checkDataAlreadyLoaded
     , getHeroID
     ) where
 
@@ -122,6 +123,18 @@ getHeroID db name = do
    let hero_id = readID hero_db
    return hero_id
 
+   
+checkDataAlreadyLoaded :: Database -> Bool
+checkDataAlreadyLoaded db = do
+   stmt <- prepare db (pack $ "select (count(*)) from heroes")
+   result <- step stmt       -- one statement step
+   cia_db <- column stmt 0   -- read how returned
+   let readID (SQLInteger n) = n
+   let present = readID cia_db
+   if present > 0 then
+		return True
+	else
+		return False
 {-
 getHeroMatches :: Database -> String -> IO Double
 getHeroMatches db hero_name = do
