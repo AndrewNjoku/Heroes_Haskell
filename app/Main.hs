@@ -24,20 +24,43 @@ heroURL = baseurl++"/heroes"
 heroRecentMatchesURL :: String -> String
 heroStatsURL name = baseurl ++ getHeroId (name) ++ "/matches"
 
+check :: Bool
+chec
+
+
+
+
+
+
+
 
 
 main :: IO ()
 
 --get Hero data and convert to Hero datatype 
 
- d <- (eitherDecode <$> getJSON heroURL) :: IO (Either String [Hero])
- -- If d is Left, the JSON was malformed.
- -- In that case, we report the error.
- -- Otherwise, we perform the operation of
- -- our choice. In this case, just print it.
-   case d of
-        Left err -> putStrLn err
-        Right ps -> print ps
+main = do 
+    
+
+
+    putStrLn "Welcome to Dota 2 HeroDex"
+
+    --Check if we have stored the heroes in database already
+    --if we have not we will call the getHeroes method in Request module to make the 
+    --Neccessery HTTP request 
+
+    putStrLn "Loading Heroes ...."
+
+    
+    	
+	a <- checkDataAlreadyLoaded 
+
+	   case a of 
+	   	    True makeRequest -> getHeroes 
+	   	    False dataLoaded -> putStrLn "Data Already Loaded"
+
+
+
 
 
 
