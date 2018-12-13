@@ -14,6 +14,9 @@ import qualified Data.ByteString as D
 
 	
 
+
+{- | Abstract function which will perform HTTP request on provided URL -}
+
 getJSON :: URL -> IO D.ByteString
 getJSON x = simpleHttp x
 
