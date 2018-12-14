@@ -13,24 +13,9 @@ type HeroName = String
 
 
 
---URLS
-
-baseurl :: String 
-baseurl = "https://api.opendota.com/api/"
-
-heroURL :: String
-heroURL = baseurl++"/heroes"
-
-heroRecentMatchesURL :: String -> String
-heroStatsURL name = baseurl ++ getHeroId (name) ++ "/matches"
 
 check :: Bool
 chec
-
-
-
-
-
 
 
 
@@ -59,21 +44,20 @@ main = do
 	   	    True makeRequest -> getHeroes 
 	   	    False dataLoaded -> putStrLn "Data Already Loaded"
 
+   putStrLn "Please enter the name of the Hero you want to learn about with modifier: -h: basic hero info, -rm return recent matches played with this hero ,for hero names enter help()
+
+   x <- getLine 
+
+   z <- checkHeroName x
+      
+       case z of
+
+         True -> getRecentMatches x 
+         False putStrLn "Hero name entered incorrectly, for a list of Heroes please enter help() "
 
 
 
 
+checkInput :: (HeroModifier l) => l -> 
 
 
-getHeroId :: HeroName -> Int 
-
- getHeroId x | x=="Anti-Mage" = return 1
-            | x="Axe"     = return 2
-            | x="Bane" = return 3
-            | x="Ax"     = return 4
-            | x=="Anti-Mage" = return 5
-            | x="Axe"     = return 6
-            | x=="Anti-Mage" = return 1
-            | x="Axe"     = return 27
-            | x=="Anti-Mage" = return 1
-            | x="Axe"     = return 2 
