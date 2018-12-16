@@ -31,7 +31,6 @@ import qualified Data.ByteString as D
 
 
 {- | Create a DB connection, returns a DB handler.
-
 -}
 database :: IO Database
 database = open $ pack "heroes.db"
@@ -40,7 +39,6 @@ database = open $ pack "heroes.db"
 closeDB = close
 
 {- | Initialises the database creating tables if they don't exist already.
-
 -}
 
 initialiseDB :: Database -> IO ()
@@ -55,42 +53,24 @@ initialiseDB db = do
    exec db $ pack "CREATE TABLE IF NOT EXISTS heroes_matches (\
             \hero_id INTEGER NOT NULL, \
             \duration INTEGER, \
-            \league_name VARCHAR(150) DEFAULT NULL, \
+            \league_name VARCHAR(150), \
             \kills INTEGER, \
             \deaths INTEGER, \
             \assists INTEGER, \
             \FOREIGN KEY (hero_id) REFERENCES heroes(id))"
 
-data Hero = Hero {
-	id :: Int64,
-	name :: String,
-	localized_name :: String,
-	primary_attr :: String,
-	attack_type :: String,
-	legs :: Int64
-} deriving (Eq, Show)
-
-data HeroMatches = HeroMatches {
-	hero_id :: Int64,
-	duration :: Int64,
-	league_name :: String,
-	kills :: Int64,
-	deaths :: Int64,
-	assists :: Int64
-} deriving (Eq, Show)
 
 {- | Insert 'Hero' data type into heroes table.
-
 -}
 
 insertHeroes :: Database -> Hero -> IO ()
 insertHeroes db hero = do
    let f (Hero i n l p a lg) = [ (pack ":i", SQLInteger i)
                                    , (pack ":n", SQLText (pack n))
-                                   , (pack ":l", SQLFloat l)
-                                   , (pack ":p", SQLFloat p)
-                                   , (pack ":a", SQLFloat a)
-                                   , (pack ":lg", SQLFloat lg)
+                                   , (pack ":l", SQLText l)
+                                   , (pack ":p", SQLText p)
+                                   , (pack ":a", SQLText a)
+                                   , (pack ":lg", SQLInteger lg)
                                    ]
    let args = f hero
    stmt <- prepare db (pack "INSERT INTO heroes VALUES (:i,:n,:l,:p,:a,:lg)")
@@ -100,16 +80,15 @@ insertHeroes db hero = do
 
 
 {- | Insert 'HeroMatch' data type into heroes_matches table
-
 -}
 insertHeroesMatches :: Database -> Int64 -> HeroMatches -> IO ()
 insertHeroesMatches db i match = do
    let f (HeroMatches i d l k d a) = [ (pack ":i", SQLInteger i)
-                                   , (pack ":d", SQLText (pack d))
-                                   , (pack ":l", SQLFloat l)
-                                   , (pack ":k", SQLFloat k)
-                                   , (pack ":dh", SQLFloat dh)
-                                   , (pack ":a", SQLFloat a)
+                                   , (pack ":d", SQLInteger (pack d))
+                                   , (pack ":l", SQLText l)
+                                   , (pack ":k", SQLInteger k)
+                                   , (pack ":dh", SQLInteger dh)
+                                   , (pack ":a", SQLInteger a)
                                    ]
    let args = f match
    stmt <- prepare db (pack "INSERT INTO heroes_matches VALUES (:i,:d,:l,:k,:dh,:a)")
@@ -117,7 +96,8 @@ insertHeroesMatches db i match = do
    result <- step stmt
    print result
 
-
+{- | Get hero ID by it's name
+-}
 getHeroID :: Database -> String -> IO Int64
 getHeroID db name = do
    stmt <- prepare db (pack $ "SELECT (id) FROM heroes WHERE name=:cia")
@@ -128,7 +108,8 @@ getHeroID db name = do
    let hero_id = readID hero_db
    return hero_id
 
-   
+{- | Check whether data is already loaded in database or not
+-}
 checkDataAlreadyLoaded :: Database -> Bool
 checkDataAlreadyLoaded db = do
    stmt <- prepare db (pack $ "select (count(*)) from heroes")
@@ -141,6 +122,9 @@ checkDataAlreadyLoaded db = do
 	else
 		return False
 
+
+{- | Gets hero details by it's name.
+-}
 getHeroDetailsByName :: Database -> String -> IO ()
 getHeroDetailsByName db name = do
    stmt <- prepare db (pack "select id, name, localized_name, primary_attr, attack_type, legs, (select count(*) from heroes_matches where hero_id = id) matches from heroes where name like '%" ++ name ++ "%' or localized_name like '%" ++ name ++ "%' order by localized_name")
@@ -169,6 +153,8 @@ getHeroDetailsByName db name = do
 			putStrLn ""
 	getData
 
+{- | Gets hero matches by it's name.
+-}
 getHeroMatchesByName :: Database -> String -> IO ()
 getHeroMatchesByName db name = do
    stmt <- prepare db (pack "select h.id, h.localized_name, hm.league_name, hm.kills, hm.deaths, hm.assists from heroes as h left join heroes_matches hm on h.id = hm.hero_id where name like '%" ++ name ++ "%' or localized_name like '%" ++ name ++ "%' order by localized_name")
@@ -195,7 +181,9 @@ getHeroMatchesByName db name = do
 		else
 			putStrLn ""
 	getData
-	
+
+{- | Gets overall stats by hero name.
+-}
 getOverallStatsByName :: Database -> String -> IO ()
 getOverallStatsByName db name = do
     stmt <- prepare db (pack "select h.localized_name, sum(hm.kills), sum(hm.deaths), sum(hm.assists), count(*) matches from heroes as h left join heroes_matches hm on h.id = hm.hero_id where name like '%" ++ name ++ "%' or localized_name like '%" ++ name ++ "%' group by h.localized_name order by localized_name")
@@ -223,6 +211,8 @@ getOverallStatsByName db name = do
 			putStrLn ""
 	getData
 
+{- | Gets overall stats by league name.
+-}
 getStatsByLeague :: Database -> String -> IO ()
 getStatsByLeague db name = do
     stmt <- prepare db (pack "select hm.league_name, count(distinct h.id) heroes, count(*) matches from heroes as h left join heroes_matches hm on h.id = hm.hero_id where league_name like '%" ++ name ++ "%' or league_name like '%" ++ name ++ "%' group by hm.league_name order by league_name")
