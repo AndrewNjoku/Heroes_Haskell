@@ -6,6 +6,11 @@ module HeroesDatabase
     , insertHeroesMatches
 	, checkDataAlreadyLoaded
     , getHeroID
+	, getAllData
+	, getHeroDetailsByName
+	, getHeroMatchesByName
+	, getOverallStatsByName
+	, getStatsByLeague
     ) where
 
 import Database.SQLite3
@@ -135,26 +140,121 @@ checkDataAlreadyLoaded db = do
 		return True
 	else
 		return False
-{-
-getHeroMatches :: Database -> String -> IO Double
-getHeroMatches db hero_name = do
-   hero_id <- getHeroID db hero_name
-   -- getting list of prices
-   stmt <- prepare db (pack "SELECT (close) FROM heroes_matches WHERE hero_id=:hid")
-   bindNamed stmt [ (pack ":hid", SQLInteger hero_id) ]
-   let
-       isFloat (SQLFloat _) = True
-       isFloat _ = False
-   let getFloat (SQLFloat f) = f
-   let readPrice ps = do
-         result <- step stmt       -- one statement step
-         p <- column stmt 0        -- read price
-         if isFloat p then
-            readPrice (p:ps)
-         else
-            return ps
-   ps <- readPrice []
-   let fs = map getFloat ps
-   return $ (sum fs) / (read.show.length $ fs)
 
--}
+getHeroDetailsByName :: Database -> String -> IO ()
+getHeroDetailsByName db name = do
+   stmt <- prepare db (pack "select id, name, localized_name, primary_attr, attack_type, legs, (select count(*) from heroes_matches where hero_id = id) matches from heroes where name like '%" ++ name ++ "%' or localized_name like '%" ++ name ++ "%' order by localized_name")
+   
+   putStrLn $ "Name" ++ " \t\t Localized name " ++ " \t\t Primary attribute " ++ " \t\t Attack type " ++ " \t\t Legs " ++ " \t\t Matches" ++ " "
+   
+   let
+		isInt (SQLInteger _) = True
+		isInt _ = False
+	let getData = do
+		result <- step stmt
+		
+		n <- column stmt 0
+		nm <- columnText stmt 1
+		l <- columnText stmt 2
+		p <- columnText stmt 3
+		a <- columnText stmt 4
+		lg <- columnInt64 stmt 5
+		m <- columnInt64 stmt 6
+		
+		if isInt n 
+			then do 
+				putStrLn $ "" ++ show(nm) ++ " \t " ++ show(l) ++ " \t " ++ show(p) ++ " \t " ++ show(a) ++ " \t " ++ show(lg) ++ " \t " ++ show(m) ++ " "
+				getData
+		else
+			putStrLn ""
+	getData
+
+getHeroMatchesByName :: Database -> String -> IO ()
+getHeroMatchesByName db name = do
+   stmt <- prepare db (pack "select h.id, h.localized_name, hm.league_name, hm.kills, hm.deaths, hm.assists from heroes as h left join heroes_matches hm on h.id = hm.hero_id where name like '%" ++ name ++ "%' or localized_name like '%" ++ name ++ "%' order by localized_name")
+   
+   putStrLn $ "Localized name" ++ " \t\t League name " ++ " \t\t Kills " ++ " \t\t Deaths " ++ " \t\t Assists " ++ " "
+   
+   let
+		isInt (SQLInteger _) = True
+		isInt _ = False
+	let getData = do
+		result <- step stmt
+		
+		n <- column stmt 0
+		nm <- columnText stmt 1
+		l <- columnText stmt 2
+		k <- columnInt64 stmt 3
+		d <- columnInt64 stmt 4
+		a <- columnInt64 stmt 5
+		
+		if isInt n 
+			then do 
+				putStrLn $ "" ++ show(nm) ++ " \t " ++ show(l) ++ " \t " ++ show(k) ++ " \t " ++ show(d) ++ " \t " ++ show(a) ++ " "
+				getData
+		else
+			putStrLn ""
+	getData
+	
+getOverallStatsByName :: Database -> String -> IO ()
+getOverallStatsByName db name = do
+    stmt <- prepare db (pack "select h.localized_name, sum(hm.kills), sum(hm.deaths), sum(hm.assists), count(*) matches from heroes as h left join heroes_matches hm on h.id = hm.hero_id where name like '%" ++ name ++ "%' or localized_name like '%" ++ name ++ "%' group by h.localized_name order by localized_name")
+   
+    putStrLn $ "Localized name" ++ " \t\t Total kills " ++ " \t\t Total deaths " ++ " \t\t Total assists " ++ " \t\t Total matches " ++ " "
+   
+    let
+		isText (SQLText _) = True
+		isText _ = False
+	let getData = do
+		result <- step stmt
+		
+		n <- column stmt 0
+		l <- columnText stmt 0
+		k <- columnInt64 stmt 1
+		d <- columnInt64 stmt 2
+		a <- columnInt64 stmt 3
+		m <- columnInt64 stmt 4
+		
+		if isText n 
+			then do 
+				putStrLn $ "" ++ show(l) ++ " \t " ++ show(k) ++ " \t " ++ show(d) ++ " \t " ++ show(a) ++ " \t " ++ show(m) ++ " "
+				getData
+		else
+			putStrLn ""
+	getData
+
+getStatsByLeague :: Database -> String -> IO ()
+getStatsByLeague db name = do
+    stmt <- prepare db (pack "select hm.league_name, count(distinct h.id) heroes, count(*) matches from heroes as h left join heroes_matches hm on h.id = hm.hero_id where league_name like '%" ++ name ++ "%' or league_name like '%" ++ name ++ "%' group by hm.league_name order by league_name")
+   
+    putStrLn $ "League name" ++ " \t\t Total heroes " ++ " \t\t Total matches " ++ " "
+   
+    let
+		isText (SQLText _) = True
+		isText _ = False
+	let getData = do
+		result <- step stmt
+		
+		n <- column stmt 0
+		l <- columnText stmt 0
+		h <- columnInt64 stmt 1
+		m <- columnInt64 stmt 2
+		
+		if isText n 
+			then do 
+				putStrLn $ "" ++ show(l) ++ " \t " ++ show(h) ++ " \t " ++ show(m) " "
+				getData
+		else
+			putStrLn ""
+	getData
+
+
+
+
+
+
+
+
+
+
+
