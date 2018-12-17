@@ -5,6 +5,8 @@ import Data.Aeson
 import GHC.Generics
 
 
+data Heroes a = Axe a | blah a | dah a| brah a |scah a| car a
+
 
 
 data Hero =
