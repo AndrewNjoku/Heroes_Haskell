@@ -1,7 +1,11 @@
 module Main where
 
-import Request.getJSON
+import System.IO
+import Request
+import HeoresDatabase
 import Data.Aeson
+import Data.Text
+import System.Environment
 
 
 
@@ -9,55 +13,122 @@ import Data.Aeson
 --Types
 
 type URL = String
-type HeroName = String
+type HeroName = Stri
+
+
+rawHeroName::String ->String
+rawHeroName x = drop 2 x
 
 
 
+--modifierd
+heroInfoModifier :: Text
+heroInfoModifier = "-i".pack
 
-check :: Bool
-chec
+recentMatchesModifier :: Text 
+recentMatchesModifier = "-r".pack
+
+averageMatchesModifier :: Text 
+averageMatchesModifier = "-a".pack
+
+leaguePerformanceModifier :: Text 
+averageMatchesModifier = "-l".pack
+
+--  Database instance 
 
 
-
-
-main :: IO ()
 
 --get Hero data and convert to Hero datatype 
 
+
+main :: IO()
+
 main = do 
+
+--our db istance
+
+	dbase <- database
     
-
-
-    putStrLn "Welcome to Dota 2 HeroDex"
+    
+    putStrLn "Welcome to Dota 2 HeroDex, Loading heroes...."
 
     --Check if we have stored the heroes in database already
     --if we have not we will call the getHeroes method in Request module to make the 
     --Neccessery HTTP request 
 
-    putStrLn "Loading Heroes ...."
-
     
-    	
+
 	a <- checkDataAlreadyLoaded 
 
 	   case a of 
-	   	    True makeRequest -> getHeroes 
-	   	    False dataLoaded -> putStrLn "Data Already Loaded"
+	   	    True makeRequest -> "HeroDex is up to date with all the latest hero information"
 
-   putStrLn "Please enter the name of the Hero you want to learn about with modifier: -h: basic hero info, -rm return recent matches played with this hero ,for hero names enter help()
+	   	    False dataLoaded -> initialiseDB dbase
 
-   x <- getLine 
+    putStrLn "to find out more about any dota 2 hero please type their name plus modifier with no spaces: -i for general info , -r for recent match stats, -a for an averaged version, and -l for league based stats
 
-   z <- checkHeroName x
-      
-       case z of
+-- reading in user input 
 
-         True -> getRecentMatches x 
-         False putStrLn "Hero name entered incorrectly, for a list of Heroes please enter help() "
+    x <- getLine 
+
+-- converting to a Text haskell type so we can make comparisons 
+    y <- pack x
+
+--using the isinfix method to check if the user input contains specified modifier
+    q <- isInfixOf heroInfoModifier y
+
+       case q of
+
+
+-- we use drop here to remove the moifier when making the call to collect the information
+       	    True -> getHeroDetailsByName dbase (rawHeroName (X))
+       	    False -> return
+
+    t <-  isInfixOf recentMatchesModifier y
+
+        case t of 
+
+            True -> getHeroMatchesByName dbase (rawHeroName (X))
+            False "Dunoo"
+
+             
+
+
+    m <-  isInfixOf averageMatchesModifier y
+
+        case t of 
+
+            True -> getOverallStatsByName dbase (rawHeroName (X))
+            False "Dunoo"
+
+
+    m <-  isInfixOf leaguePerformanceModifier y
+
+        case t of 
+
+            True -> getStatsByLeague dbase (rawHeroName (X))
+            
+            False "Dunoo"
+
+             
+
+
+          
+
+             
 
 
 
 
-checkInput :: (HeroModifier l) => l -> 
 
+
+
+
+  
+
+
+
+
+
+   
 
